@@ -55,46 +55,23 @@ actor TokenFactory {
     created_at : Int;
     total_supply : Nat;
     minting_account : Account;
-    creator : Principal;
   };
 
-  // Wallet Balance Types
-  public type WalletBalances = {
-    icp_balance : Nat;
-    ckTestBTC_balance : Nat;
-    ckSepoliaETH_balance : Nat;
-  };
-
-  public type UserDashboard = {
-    principal : Principal;
-    balances : WalletBalances;
-    tokens_created : [Principal];
-    tokens_metadata : [(Principal, TokenMetadata)];
-    can_afford_deployment : Bool;
-  };
-
-  // Updated InitArgs to match current ICRC-1 ledger interface
   public type InitArgs = {
-    minting_account : Account;
-    fee_collector_account : ?Account;
-    transfer_fee : Nat;
-    decimals : ?Nat8;
-    max_memo_length : ?Nat16;
     token_symbol : Text;
     token_name : Text;
+    decimals : ?Nat8;
+    minting_account : Account;
+    transfer_fee : Nat;
     metadata : [(Text, MetadataValue)];
+    feature_flags : ?{ icrc2 : Bool };
     initial_balances : [(Account, Nat)];
     archive_options : {
       num_blocks_to_archive : Nat64;
-      max_transactions_per_response : ?Nat64;
       trigger_threshold : Nat64;
-      more_controller_ids : ?[Principal];
-      max_message_size_bytes : ?Nat64;
-      cycles_for_archive_creation : ?Nat64;
-      node_max_memory_size_bytes : ?Nat64;
       controller_id : Principal;
+      cycles_for_archive_creation : ?Nat64;
     };
-    feature_flags : ?{ icrc2 : Bool };
   };
 
   public type LedgerArgs = {
@@ -173,38 +150,22 @@ actor TokenFactory {
     icrc2_transfer_from : (TransferFromArgs) -> async Result.Result<Nat, TransferError>;
   };
 
-  // Ledger interfaces for balance queries
-  public type LedgerInterface = actor {
-    icrc1_balance_of : query (Account) -> async Nat;
-    icrc1_transfer : (TransferArgs) -> async Result.Result<Nat, TransferError>;
-  };
-
   // Constants
   private let FIXED_SUPPLY : Nat = 1_000_000_000; // 1 Billion tokens
   private let DEFAULT_DECIMALS : Nat8 = 8;
   private let DEFAULT_FEE : Nat = 10_000;
-  private let DEPLOYMENT_FEE : Nat = 3000; // 3000 satoshi in ckTestBTC
-  
-  // Canister IDs for balance queries (update these with actual canister IDs)
-  private let ICP_LEDGER_CANISTER = "uzt4z-lp777-77774-qaabq-cai"; // ICP Ledger
-  private let CKTEST_BTC_CANISTER = "mxzaz-hqaaa-aaaar-qaada-cai"; // ckTestBTC
-  private let CK_SEPOLIA_ETH_CANISTER = "apia6-jaaaa-aaaar-qabma-cai"; // ckSepoliaETH
 
   // Stable storage
-  private stable var controller : Principal = Principal.fromText("rdmx6-jaaaa-aaaaa-aaadq-cai"); // Default, should be set on deployment
-  private stable var bondingCurveCanister : ?Principal = null;
   private stable var tokens : List.List<Principal> = List.nil();
   private stable var createdCanisters : List.List<Principal> = List.nil();
   private stable var wasm_module : ?Blob = null;
   private stable var tokenMetadataEntries : [(Principal, TokenMetadata)] = [];
-  private stable var collectedFees : Nat = 0;
-  private stable var totalTokensDeployed : Nat = 0;
   
   // Runtime storage - explicitly marked as transient
-  private var tokenMetadata = HashMap.HashMap<Principal, TokenMetadata>(0, Principal.equal, Principal.hash);
+  private transient var tokenMetadata = HashMap.HashMap<Principal, TokenMetadata>(0, Principal.equal, Principal.hash);
 
   // Management canister interface - explicitly marked as transient
-  private let mgmt = actor "aaaaa-aa" : actor {
+  private transient let mgmt = actor "aaaaa-aa" : actor {
     create_canister : shared { settings : ?{ controllers : [Principal] } } -> async { canister_id : Principal };
     install_code : shared {
       canister_id : Principal;
@@ -215,7 +176,7 @@ actor TokenFactory {
   };
 
   // HTTP outcalls interface - explicitly marked as transient
-  private let http = actor "aaaaa-aa" : actor {
+  private transient let http = actor "aaaaa-aa" : actor {
     http_request : shared {
       url : Text;
       max_response_bytes : ?Nat64;
@@ -233,7 +194,7 @@ actor TokenFactory {
     };
   };
 
-  private let icrc1_wasm_url = "https://download.dfinity.systems/ic/4833f30d3b5afd84a385dfb146581580285d8a7e/canisters/ic-icrc1-ledger.wasm.gz";
+  private transient let icrc1_wasm_url = "https://download.dfinity.systems/ic/4833f30d3b5afd84a385dfb146581580285d8a7e/canisters/ic-icrc1-ledger.wasm.gz";
 
   // Initialize from stable storage
   system func preupgrade() {
@@ -250,219 +211,9 @@ actor TokenFactory {
     tokenMetadataEntries := [];
   };
 
-  // Access control functions
-  private func isController(caller : Principal) : Bool {
-    caller == controller
-  };
-
-  private func isAuthenticated(caller : Principal) : Bool {
-    // In ICP, Internet Identity users have principals that are NOT anonymous
-    // Anonymous principal is "2vxsx-fae"
-    caller != Principal.fromText("2vxsx-fae") and not Principal.isAnonymous(caller)
-  };
-
-  // Wallet Balance Query Functions
-  public shared({ caller }) func getUserWalletBalances() : async Result.Result<WalletBalances, Text> {
-    if (not isAuthenticated(caller)) {
-      return #err("Unauthorized: Please login with Internet Identity to view wallet balances");
-    };
-
-    let userAccount : Account = { owner = caller; subaccount = null };
-    
-    try {
-      // Query ICP balance
-      let icpLedger : LedgerInterface = actor(ICP_LEDGER_CANISTER);
-      let icpBalance = await icpLedger.icrc1_balance_of(userAccount);
-      
-      // Query ckTestBTC balance
-      let ckTestBTCLedger : LedgerInterface = actor(CKTEST_BTC_CANISTER);
-      let ckTestBTCBalance = await ckTestBTCLedger.icrc1_balance_of(userAccount);
-      
-      // Query ckSepoliaETH balance
-      let ckSepoliaETHLedger : LedgerInterface = actor(CK_SEPOLIA_ETH_CANISTER);
-      let ckSepoliaETHBalance = await ckSepoliaETHLedger.icrc1_balance_of(userAccount);
-      
-      let balances : WalletBalances = {
-        icp_balance = icpBalance;
-        ckTestBTC_balance = ckTestBTCBalance;
-        ckSepoliaETH_balance = ckSepoliaETHBalance;
-      };
-      
-      #ok(balances)
-    } catch (e) {
-      #err("Failed to query wallet balances: " # Error.message(e))
-    }
-  };
-
-  // Get specific token balance for user
-  public shared({ caller }) func getUserTokenBalance(tokenId : Principal) : async Result.Result<Nat, Text> {
-    if (not isAuthenticated(caller)) {
-      return #err("Unauthorized: Please login with Internet Identity to view token balance");
-    };
-
-    let userAccount : Account = { owner = caller; subaccount = null };
-    
-    try {
-      let token : TokenInterface = actor(Principal.toText(tokenId));
-      let balance = await token.icrc1_balance_of(userAccount);
-      #ok(balance)
-    } catch (e) {
-      #err("Failed to get token balance: " # Error.message(e))
-    }
-  };
-
-  // Comprehensive user dashboard
-  public shared({ caller }) func getUserDashboard() : async Result.Result<UserDashboard, Text> {
-    if (not isAuthenticated(caller)) {
-      return #err("Unauthorized: Please login with Internet Identity to view dashboard");
-    };
-
-    try {
-      // Get wallet balances
-      let balancesResult = await getUserWalletBalances();
-      let balances = switch (balancesResult) {
-        case (#ok(b)) b;
-        case (#err(e)) return #err("Failed to get balances: " # e);
-      };
-      
-      // Get tokens created by user
-      let userTokens = getTokensByCreator(caller);
-      let userTokensMetadata = getTokensMetadataByCreator(caller);
-      
-      // Check if user can afford deployment
-      let canAfford = balances.ckTestBTC_balance >= DEPLOYMENT_FEE;
-      
-      let dashboard : UserDashboard = {
-        principal = caller;
-        balances = balances;
-        tokens_created = userTokens;
-        tokens_metadata = userTokensMetadata;
-        can_afford_deployment = canAfford;
-      };
-      
-      #ok(dashboard)
-    } catch (e) {
-      #err("Failed to get user dashboard: " # Error.message(e))
-    }
-  };
-
-  // Authentication check function
-  public shared({ caller }) func checkAuthentication() : async Result.Result<{ 
-    authenticated: Bool; 
-    principal: Principal; 
-    principalText: Text 
-  }, Text> {
-    let isAuth = isAuthenticated(caller);
-    #ok({
-      authenticated = isAuth;
-      principal = caller;
-      principalText = Principal.toText(caller);
-    })
-  };
-
-  // Login simulation function (for testing purposes)
-  public shared({ caller }) func login() : async Result.Result<Text, Text> {
-    if (isAuthenticated(caller)) {
-      #ok("Successfully authenticated with principal: " # Principal.toText(caller))
-    } else {
-      #err("Authentication failed. Please login with Internet Identity.")
-    }
-  };
-
-  // Admin functions
-  public shared({ caller }) func setController(newController : Principal) : async Result.Result<Text, Text> {
-    if (not isController(caller)) {
-      return #err("Unauthorized: Only controller can set new controller");
-    };
-    controller := newController;
-    #ok("Controller updated successfully")
-  };
-
-  public shared({ caller }) func setBondingCurveCanister(bondingCanister : Principal) : async Result.Result<Text, Text> {
-    if (not isController(caller)) {
-      return #err("Unauthorized: Only controller can set bonding curve canister");
-    };
-    bondingCurveCanister := ?bondingCanister;
-    #ok("Bonding curve canister set successfully")
-  };
-
-  // Fee collection functions
-  private func collectFee(from : Principal) : async Result.Result<Nat, Text> {
-    let ckTestBTC : LedgerInterface = actor(CKTEST_BTC_CANISTER);
-    let factoryAccount : Account = { owner = Principal.fromActor(TokenFactory); subaccount = null };
-    
-    try {
-      let transferResult = await ckTestBTC.icrc1_transfer({
-        from_subaccount = null;
-        to = factoryAccount;
-        amount = DEPLOYMENT_FEE;
-        fee = null;
-        memo = ?Text.encodeUtf8("Token deployment fee");
-        created_at_time = null;
-      });
-      
-      switch (transferResult) {
-        case (#ok(blockIndex)) {
-          collectedFees += DEPLOYMENT_FEE;
-          #ok(blockIndex)
-        };
-        case (#err(error)) {
-          let errorMsg = switch (error) {
-            case (#InsufficientFunds({ balance })) "Insufficient ckTestBTC balance. Required: " # Nat.toText(DEPLOYMENT_FEE) # " satoshi, Available: " # Nat.toText(balance);
-            case (#BadFee({ expected_fee })) "Bad fee, expected: " # Nat.toText(expected_fee);
-            case (_) "Transfer failed";
-          };
-          #err(errorMsg)
-        };
-      }
-    } catch (e) {
-      #err("Failed to collect fee: " # Error.message(e))
-    }
-  };
-
-  public query({ caller }) func getCollectedFees() : async Result.Result<Nat, Text> {
-    if (not isController(caller)) {
-      return #err("Unauthorized: Only controller can view collected fees");
-    };
-    #ok(collectedFees)
-  };
-
-  public shared({ caller }) func withdrawFees(to : Account, amount : Nat) : async Result.Result<Nat, Text> {
-    if (not isController(caller)) {
-      return #err("Unauthorized: Only controller can withdraw fees");
-    };
-    
-    if (amount > collectedFees) {
-      return #err("Insufficient collected fees. Available: " # Nat.toText(collectedFees));
-    };
-    
-    let ckTestBTC : LedgerInterface = actor(CKTEST_BTC_CANISTER);
-    
-    try {
-      let transferResult = await ckTestBTC.icrc1_transfer({
-        from_subaccount = null;
-        to = to;
-        amount = amount;
-        fee = null;
-        memo = ?Text.encodeUtf8("Fee withdrawal");
-        created_at_time = null;
-      });
-      
-      switch (transferResult) {
-        case (#ok(blockIndex)) {
-          collectedFees -= amount;
-          #ok(blockIndex)
-        };
-        case (#err(error)) {
-          #err("Withdrawal failed")
-        };
-      }
-    } catch (e) {
-      #err("Failed to withdraw fees: " # Error.message(e))
-    }
-  };
-
   // Helper function to create ICRC-2 compliant metadata
+  // Note: Standard fields like icrc1:name, icrc1:symbol, icrc1:decimals, icrc1:fee
+  // are automatically handled by the ledger and should NOT be included in metadata
   func createIcrc2Metadata(
     logo : LogoData,
     description : Text,
@@ -565,7 +316,7 @@ actor TokenFactory {
     }
   };
 
-  // Enhanced token creation with authentication, fee collection, and proper ownership
+  // Enhanced token creation with ICRC-2 support and fixed supply
   public shared({ caller }) func createIcrc2Token(
     name : Text,
     symbol : Text,
@@ -575,11 +326,6 @@ actor TokenFactory {
     telegram : ?Text,
     twitter : ?Text
   ) : async Result.Result<Principal, Text> {
-    // Check if user is authenticated with Internet Identity
-    if (not isAuthenticated(caller)) {
-      return #err("Unauthorized: Please login with Internet Identity to deploy a token");
-    };
-
     try {
       // Validate required fields
       if (Text.size(name) == 0) {
@@ -594,15 +340,6 @@ actor TokenFactory {
 
       if (wasm_module == null) {
         return #err("WASM module not available. Please upload or fetch it first using uploadWasm() or save_wasm().");
-      };
-
-      // Collect deployment fee
-      let feeCollectionResult = await collectFee(caller);
-      switch (feeCollectionResult) {
-        case (#err(errorMsg)) {
-          return #err("Fee collection failed: " # errorMsg);
-        };
-        case (#ok(_)) {};
       };
 
       let self = Principal.fromActor(TokenFactory);
@@ -627,30 +364,21 @@ actor TokenFactory {
             twitter
           );
           
-          // Token factory will be the minting account and own the initial supply
-          let factoryAccount : Account = { owner = self; subaccount = null };
-          
           let initArgs : InitArgs = {
-            minting_account = factoryAccount;
-            fee_collector_account = null;
-            transfer_fee = DEFAULT_FEE;
-            decimals = ?DEFAULT_DECIMALS;
-            max_memo_length = ?32;
             token_symbol = symbol;
             token_name = name;
+            decimals = ?DEFAULT_DECIMALS;
+            minting_account = { owner = caller; subaccount = null };
+            transfer_fee = DEFAULT_FEE;
             metadata = metadata;
-            initial_balances = [(factoryAccount, FIXED_SUPPLY * (10 ** Nat8.toNat(DEFAULT_DECIMALS)))];
+            feature_flags = ?{ icrc2 = true };
+            initial_balances = [({ owner = caller; subaccount = null }, FIXED_SUPPLY * (10 ** Nat8.toNat(DEFAULT_DECIMALS)))];
             archive_options = {
               num_blocks_to_archive = Nat64.fromNat(1000);
-              max_transactions_per_response = ?Nat64.fromNat(2000);
               trigger_threshold = Nat64.fromNat(2000);
-              more_controller_ids = null;
-              max_message_size_bytes = null;
-              cycles_for_archive_creation = ?Nat64.fromNat(10_000_000_000_000);
-              node_max_memory_size_bytes = null;
               controller_id = self;
+              cycles_for_archive_creation = ?Nat64.fromNat(10_000_000_000_000);
             };
-            feature_flags = ?{ icrc2 = true };
           };
 
           let ledgerArgs : LedgerArgs = #Init(initArgs);
@@ -665,39 +393,6 @@ actor TokenFactory {
             mode = #install;
           });
 
-          // Approve bonding curve to spend tokens if it's set
-          switch (bondingCurveCanister) {
-            case (?bondingCanister) {
-              let token : TokenInterface = actor(Principal.toText(newCanister));
-              let bondingAccount : Account = { owner = bondingCanister; subaccount = null };
-              
-              // Approve the bonding curve to spend the entire token supply
-              let approvalResult = await token.icrc2_approve({
-                from_subaccount = null;
-                spender = bondingAccount;
-                amount = FIXED_SUPPLY * (10 ** Nat8.toNat(DEFAULT_DECIMALS));
-                expected_allowance = null;
-                expires_at = null; // No expiration
-                fee = null;
-                memo = ?Text.encodeUtf8("Bonding curve approval");
-                created_at_time = null;
-              });
-
-              switch (approvalResult) {
-                case (#ok(_)) {
-                  Debug.print("Bonding curve approval successful");
-                };
-                case (#err(error)) {
-                  Debug.print("Bonding curve approval failed");
-                  // Continue anyway, the token is still created
-                };
-              };
-            };
-            case null {
-              Debug.print("No bonding curve canister set, skipping approval");
-            };
-          };
-
           // Store token metadata
           let tokenMeta : TokenMetadata = {
             name = name;
@@ -711,15 +406,13 @@ actor TokenFactory {
             twitter = twitter;
             created_at = Time.now();
             total_supply = FIXED_SUPPLY;
-            minting_account = factoryAccount;
-            creator = caller;
+            minting_account = { owner = caller; subaccount = null };
           };
           
           tokenMetadata.put(newCanister, tokenMeta);
           tokens := List.push(newCanister, tokens);
-          totalTokensDeployed += 1;
           
-          Debug.print("ICRC-2 token canister successfully created with fixed supply owned by token factory.");
+          Debug.print("ICRC-2 token canister successfully created with fixed supply of 1B tokens.");
           #ok(newCanister)
         };
         case null {
@@ -790,30 +483,6 @@ actor TokenFactory {
     DEFAULT_FEE
   };
 
-  public query func getDeploymentFee() : async Nat {
-    DEPLOYMENT_FEE
-  };
-
-  public query func getController() : async Principal {
-    controller
-  };
-
-  public query func getBondingCurveCanister() : async ?Principal {
-    bondingCurveCanister
-  };
-
-  public query func getCanisterIds() : async {
-    icp_ledger: Text;
-    ckTestBTC_ledger: Text;
-    ckSepoliaETH_ledger: Text;
-  } {
-    {
-      icp_ledger = ICP_LEDGER_CANISTER;
-      ckTestBTC_ledger = CKTEST_BTC_CANISTER;
-      ckSepoliaETH_ledger = CK_SEPOLIA_ETH_CANISTER;
-    }
-  };
-
   public query func getStats() : async { 
     totalTokens: Nat; 
     totalCreatedCanisters: Nat; 
@@ -822,11 +491,6 @@ actor TokenFactory {
     fixedSupply: Nat;
     defaultDecimals: Nat8;
     defaultFee: Nat;
-    deploymentFee: Nat;
-    collectedFees: Nat;
-    totalTokensDeployed: Nat;
-    controller: Principal;
-    bondingCurveCanister: ?Principal;
   } {
     {
       totalTokens = List.size(tokens);
@@ -839,11 +503,6 @@ actor TokenFactory {
       fixedSupply = FIXED_SUPPLY;
       defaultDecimals = DEFAULT_DECIMALS;
       defaultFee = DEFAULT_FEE;
-      deploymentFee = DEPLOYMENT_FEE;
-      collectedFees = collectedFees;
-      totalTokensDeployed = totalTokensDeployed;
-      controller = controller;
-      bondingCurveCanister = bondingCurveCanister;
     }
   };
 
@@ -910,17 +569,12 @@ actor TokenFactory {
     }
   };
 
-  // Only controller can perform administrative transfers
-  public shared({ caller }) func adminTransferTokens(
+  public shared func testTokenTransfer(
     tokenId : Principal,
     to : Account,
     amount : Nat,
     memo : ?Blob
   ) : async Result.Result<Nat, Text> {
-    if (not isController(caller)) {
-      return #err("Unauthorized: Only controller can perform admin transfers");
-    };
-
     try {
       let token : TokenInterface = actor(Principal.toText(tokenId));
       let transferResult = await token.icrc1_transfer({
@@ -1048,31 +702,5 @@ actor TokenFactory {
     } catch (e) {
       #err("Failed to transfer from: " # Error.message(e))
     }
-  };
-
-  // Utility function to check if a user can afford the deployment fee
-  public shared func canAffordDeployment(user : Principal) : async Result.Result<Bool, Text> {
-    let ckTestBTC : LedgerInterface = actor(CKTEST_BTC_CANISTER);
-    let userAccount : Account = { owner = user; subaccount = null };
-    
-    try {
-      let balance = await ckTestBTC.icrc1_balance_of(userAccount);
-      #ok(balance >= DEPLOYMENT_FEE)
-    } catch (e) {
-      #err("Failed to check balance: " # Error.message(e))
-    }
-  };
-
-  // Get tokens created by a specific user
-  public query func getTokensByCreator(creator : Principal) : async [Principal] {
-    let allTokens = Iter.toArray(tokenMetadata.entries());
-    let userTokens = Array.filter<(Principal, TokenMetadata)>(allTokens, func(entry) = entry.1.creator == creator);
-    Array.map<(Principal, TokenMetadata), Principal>(userTokens, func(entry) = entry.0)
-  };
-
-  // Get detailed information about tokens created by a user
-  public query func getTokensMetadataByCreator(creator : Principal) : async [(Principal, TokenMetadata)] {
-    let allTokens = Iter.toArray(tokenMetadata.entries());
-    Array.filter<(Principal, TokenMetadata)>(allTokens, func(entry) = entry.1.creator == creator)
   };
 }

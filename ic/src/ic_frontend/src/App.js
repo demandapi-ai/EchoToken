@@ -1,39 +1,28 @@
 import { html, render } from 'lit-html';
-import { ic_backend } from 'declarations/ic_backend';
 import logo from './logo2.svg';
 
 class App {
-  greeting = '';
-
   constructor() {
     this.#render();
   }
 
-  #handleSubmit = async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('name').value;
-    this.greeting = await ic_backend.greet(name);
-    this.#render();
-  };
-
   #render() {
-    let body = html`
-      <main>
-        <img src="${logo}" alt="DFINITY logo" />
-        <br />
-        <br />
-        <form action="#">
-          <label for="name">Enter your name: &nbsp;</label>
-          <input id="name" alt="Name" type="text" />
-          <button type="submit">Click Me!</button>
-        </form>
-        <section id="greeting">${this.greeting}</section>
+    const body = html`
+      <main style="text-align: center; font-family: sans-serif; padding: 2rem;">
+        <img src="${logo}" alt="ECHO MINT Logo" style="width: 150px; margin-bottom: 2rem;" />
+        <h1 style="font-size: 3rem; margin-bottom: 1rem;">ECHO MINT</h1>
+        <p style="font-size: 1.25rem; color: #555;">
+          Deploy tokens easily with Fetch AI
+        </p>
+        <button 
+          style="margin-top: 2rem; padding: 0.75rem 1.5rem; font-size: 1rem; background-color: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer;"
+          @click=${() => alert('Token deployment coming soon!')}
+        >
+          Deploy Token
+        </button>
       </main>
     `;
     render(body, document.getElementById('root'));
-    document
-      .querySelector('form')
-      .addEventListener('submit', this.#handleSubmit);
   }
 }
 
