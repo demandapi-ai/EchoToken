@@ -112,6 +112,7 @@ dfx start --background
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
 ```
+Upload wasm to the TokenFactory
 
 ```bash
 # uploadwasm
