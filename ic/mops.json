@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "vector": "latest",
+    "icrc7-mo": "latest",
+    "class-plus": "latest"
+  }
+}

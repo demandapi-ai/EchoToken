@@ -112,8 +112,18 @@ dfx start --background
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
 ```
+bash```
 Upload wasm to the TokenFactory
+// --- CONFIGURATION ---
+// The canister ID of your TokenFactory canister.
+const canisterId = 'your canister id'; 
 
+// The local path to your Wasm file.
+const wasmFilePath = '/workspaces/EchoToken/ic/wasm/icrc1_ledger.wasm.gz';
+// The URL for the local replica.
+const localUrl = 'https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io'; //replace with your localurl
+// --------------------
+```
 ```bash
 # uploadwasm
 

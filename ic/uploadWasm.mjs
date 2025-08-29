@@ -8,7 +8,7 @@ global.fetch = fetch;
 
 // --- CONFIGURATION ---
 // The canister ID of your TokenFactory canister.
-const canisterId = '25x2w-paaaa-aaaab-qackq-cai'; 
+const canisterId = 'mkv5r-3aaaa-aaaab-qabsq-cai'; 
 
 // The local path to your Wasm file.
 const wasmFilePath = '/workspaces/EchoToken/ic/wasm/icrc1_ledger.wasm.gz';

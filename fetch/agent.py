@@ -16,8 +16,8 @@ from uuid import uuid4
 ASI1_API_KEY = "sk_1f402cc1bf234598ba41b05b4d6284e5552ac70205ce4763bf593a4bc177ff72" # ⚠️ PASTE YOUR ASI1 API KEY HERE
 
 # 2. Get your canister ID after deploying it to the IC
-CANISTER_ID = "uxrrr-q7777-77774-qaaaq-cai" # ⚠️ PASTE YOUR CANISTER ID HERE
-BASE_URL = "http://127.0.0.1:4943" # For local testing with dfx
+CANISTER_ID = "mkv5r-3aaaa-aaaab-qabsq-cai" # ⚠️ PASTE YOUR CANISTER ID HERE
+BASE_URL = "https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io" # For local testing with dfx
 
 # ------------------- 🌐 API HEADERS -------------------
 ASI1_BASE_URL = "https://api.asi1.ai/v1"
