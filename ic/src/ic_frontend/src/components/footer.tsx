@@ -35,20 +35,25 @@ export function Footer() {
             >
               GitHub
             </a>
-            <Link href="/app">
-              <Button 
-                className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-medium"
-                data-testid="footer-launch-app"
-              >
-                Launch App
-              </Button>
-            </Link>
+            <a 
+  href="https://agentverse.ai/agents/details/agent1q2yx0qufvrhkfd29fw0yamze7v5smrnvp45pl027v7qet4xd0cjl2ghjn8c/profile"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button 
+    className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-medium"
+    data-testid="footer-launch-app"
+  >
+    Launch App
+  </Button>
+</a>
+
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border/50 text-center">
           <p className="text-muted-foreground">
-            © 2024 EchoToken. All rights reserved. | Built on advanced DeFi infrastructure
+            © 2025 EchoToken. All rights reserved. | Built on Internet Computer X Fetch AI
           </p>
         </div>
       </div>

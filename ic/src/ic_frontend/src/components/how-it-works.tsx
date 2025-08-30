@@ -12,24 +12,24 @@ export function HowItWorks() {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Experience the future of DeFi with our streamlined three-step process
+            Experience Launching Tokens with Natural Language in Four-step process
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Step 1 */}
           <div className="text-center group" data-testid="step-1">
             <div className="relative mb-8">
               <div className="w-24 h-24 mx-auto rounded-2xl glassmorphism border border-primary/30 flex items-center justify-center group-hover:glow-effect transition-all duration-300">
-                <Wallet className="w-12 h-12 text-primary" />
+                <Rocket className="w-12 h-12 text-primary" />
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-orbitron font-bold">
                 1
               </div>
             </div>
-            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Connect Wallet</h3>
+            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Launch App & Chat with Agent </h3>
             <p className="text-muted-foreground leading-relaxed">
-              Connect your Web3 wallet to access the EchoToken ecosystem across multiple chains
+              Tell the Agent that you want to Launch a Token & the agent will request for your Token metadata
             </p>
           </div>
 
@@ -37,15 +37,15 @@ export function HowItWorks() {
           <div className="text-center group" data-testid="step-2">
             <div className="relative mb-8">
               <div className="w-24 h-24 mx-auto rounded-2xl glassmorphism border border-secondary/30 flex items-center justify-center group-hover:glow-effect transition-all duration-300">
-                <Settings className="w-12 h-12 text-secondary" />
+                <Wallet className="w-12 h-12 text-secondary" />
               </div>
               <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-orbitron font-bold">
                 2
               </div>
             </div>
-            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Configure Parameters</h3>
+            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Fund your account to cover cost</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Set up your bonding curve parameters and cross-chain deployment preferences
+              Thanks to ICP reverse gas model, pay for token deploy in your prefered currency eg;Fetch,BTC,ETH,SOL,ICP,USDT
             </p>
           </div>
 
@@ -59,9 +59,24 @@ export function HowItWorks() {
                 3
               </div>
             </div>
-            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Launch & Earn</h3>
+            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Deploy Token</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Deploy your token and start earning from automated liquidity management and burns
+              Agent Deduct Fee and deploys your ICRC-2 Token and Token ID is returned
+            </p>
+          </div>
+          {/* Step 4 */}
+          <div className="text-center group" data-testid="step-4">
+            <div className="relative mb-8">
+              <div className="w-24 h-24 mx-auto rounded-2xl glassmorphism border border-primary/30 flex items-center justify-center group-hover:glow-effect transition-all duration-300">
+                <Settings className="w-12 h-12 text-secondary" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-orbitron font-bold">
+                4
+              </div>
+            </div>
+            <h3 className="font-orbitron font-bold text-xl mb-4 text-foreground">Manage and Airdrop Token</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Manage your Token and Airdrop to your community with time locks
             </p>
           </div>
         </div>

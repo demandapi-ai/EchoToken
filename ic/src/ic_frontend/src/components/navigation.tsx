@@ -61,14 +61,19 @@ export function Navigation() {
             >
               Roadmap
             </button>
-            <Link href="/app">
-              <Button 
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-medium glow-hover transition-all duration-300"
-                data-testid="nav-launch-app"
-              >
-                Launch App
-              </Button>
-            </Link>
+           <a
+  href="https://agentverse.ai/agents/details/agent1q2yx0qufvrhkfd29fw0yamze7v5smrnvp45pl027v7qet4xd0cjl2ghjn8c/profile"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button
+    className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-medium glow-hover transition-all duration-300"
+    data-testid="nav-launch-app"
+  >
+    Launch App
+  </Button>
+</a>
+
           </div>
 
           {/* Mobile Menu Button */}

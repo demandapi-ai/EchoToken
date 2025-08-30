@@ -3,41 +3,51 @@ import { Flag, Settings, Star, Globe } from "lucide-react";
 export function RoadmapSection() {
   const roadmapPhases = [
     {
-      title: "Phase 1: Foundation",
+      title: "Phase 1: Token Factory with Fetch Agent",
       status: "Completed",
       statusColor: "bg-primary/20 text-primary",
       icon: Flag,
       iconColor: "text-primary",
       borderColor: "border-primary/50",
-      description: "Core protocol development, smart contract audits, and initial testnet deployment"
+      description: "Launch ICRC-2 Tokens with Natural Language Powered by Fetch AI & Internet Computer"
     },
     {
-      title: "Phase 2: Expansion", 
+      title: "Phase 2: Payment System", 
       status: "In Progress",
       statusColor: "bg-secondary/20 text-secondary",
       icon: Settings,
       iconColor: "text-secondary",
       borderColor: "border-secondary/50",
-      description: "Cross-chain integration, advanced bonding curves, and community governance implementation"
+      description: "Introduce Payment system allowing users to pay for services in the platform"
     },
     {
-      title: "Phase 3: Innovation",
-      status: "Q2 2024",
+      title: "Phase 3: Airdropping Features",
+      status: "Q4 2025",
       statusColor: "bg-purple-400/20 text-purple-400",
       icon: Star,
       iconColor: "text-purple-400",
       borderColor: "border-purple-400/50",
-      description: "AI-powered liquidity optimization, institutional partnerships, and ecosystem expansion"
+      description: "Effortlessly Airdrop to community with natural language intergrated with Timers for scheduling "
     },
     {
-      title: "Phase 4: Global Scale",
-      status: "Q4 2024",
+      title: "Phase 4: NFT Creation",
+      status: "Q4 2025",
       statusColor: "bg-purple-600/20 text-purple-600",
       icon: Globe,
       iconColor: "text-purple-600",
       borderColor: "border-purple-600/50",
-      description: "Global adoption, enterprise integrations, and next-generation DeFi infrastructure"
+      description: "Expand TokenFactory to support creation of both 1/1 Art and Collections"
+    },
+    {
+      title: "Phase 5: Launchpads, Dexes & Marketplaces Intergration",
+      status: "Q1 2026",
+      statusColor: "bg-purple-600/20 text-purple-600",
+      icon: Globe,
+      iconColor: "text-purple-600",
+      borderColor: "border-purple-600/50",
+      description: "Allow users to list their deployed tokens and nfts to launchpads, dexes & marketplaces in natural Language"
     }
+    
   ];
 
   return (

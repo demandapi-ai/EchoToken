@@ -7,15 +7,15 @@ export function CommunitySection() {
       icon: Twitter,
       color: "text-primary group-hover:scale-110",
       borderColor: "hover:border-primary/50",
-      count: "12.4K",
-      href: "#"
+      count: "-",
+      href: "https://x.com/echotokenagent"
     },
     {
       name: "Discord", 
       icon: MessageCircle,
       color: "text-secondary group-hover:scale-110",
       borderColor: "hover:border-secondary/50",
-      count: "8.7K",
+      count: "-",
       href: "#"
     },
     {
@@ -23,8 +23,8 @@ export function CommunitySection() {
       icon: Github,
       color: "text-purple-400 group-hover:scale-110", 
       borderColor: "hover:border-purple-400/50",
-      count: "2.1K",
-      href: "#"
+      count: "-",
+      href: "https://github.com/demandapi-ai/EchoToken"
     }
   ];
 
@@ -40,7 +40,7 @@ export function CommunitySection() {
               </span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Connect with developers, traders, and enthusiasts building the future of DeFi. 
+              Connect with developers, Creators, Founders building the future of Web3 & AI. 
               Get early access to features, participate in governance, and shape the protocol's evolution.
             </p>
 
@@ -75,7 +75,7 @@ export function CommunitySection() {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-orbitron font-bold text-gradient">Echo Bot</div>
-                    <div className="text-muted-foreground">DeFi Assistant</div>
+                    <div className="text-muted-foreground">Token Agent</div>
                   </div>
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 rounded-full bg-secondary animate-pulse"></div>

@@ -35,42 +35,47 @@ export function HeroSection() {
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-orbitron font-medium">
-          Advanced DeFi Protocol
+          Deploy ChainFusion Tokens
         </p>
         
         <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-          Revolutionary bonding curves meet cross-chain liquidity in the most advanced DeFi ecosystem. 
-          Experience zero-liquidity launches with automated burn mechanisms.
+          An AI Agent build with FetchAI that deploys ChainFusion Tokens with natural language by 
+          generating token meta-data from blog or twitter post
         </p>
 
         {/* CTA Button */}
-        <Link href="/app">
-          <Button 
-            className="group relative px-12 py-4 bg-gradient-to-r from-primary to-secondary rounded-2xl font-orbitron font-bold text-lg text-primary-foreground transition-all duration-300 hover:scale-105 glow-effect"
-            data-testid="hero-launch-app"
-          >
-            <span className="relative z-10">Launch App</span>
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <Rocket className="ml-3 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </Link>
+<a 
+  href="https://agentverse.ai/agents/details/agent1q2yx0qufvrhkfd29fw0yamze7v5smrnvp45pl027v7qet4xd0cjl2ghjn8c/profile"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button 
+    className="group relative px-12 py-4 bg-gradient-to-r from-primary to-secondary rounded-2xl font-orbitron font-bold text-lg text-primary-foreground transition-all duration-300 hover:scale-105 glow-effect"
+    data-testid="hero-launch-app"
+  >
+    <span className="relative z-10">Launch App</span>
+    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <Rocket className="ml-3 group-hover:translate-x-1 transition-transform" />
+  </Button>
+</a>
+
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
           <div className="text-center" data-testid="stat-tvl">
-            <div className="text-3xl font-orbitron font-bold text-primary">$2.4B</div>
-            <div className="text-muted-foreground">TVL</div>
+            <div className="text-3xl font-orbitron font-bold text-primary">60</div>
+            <div className="text-muted-foreground">Interractions</div>
           </div>
           <div className="text-center" data-testid="stat-volume">
-            <div className="text-3xl font-orbitron font-bold text-secondary">$847M</div>
-            <div className="text-muted-foreground">24h Volume</div>
+            <div className="text-3xl font-orbitron font-bold text-secondary">10</div>
+            <div className="text-muted-foreground">Tokens Launched</div>
           </div>
           <div className="text-center" data-testid="stat-users">
-            <div className="text-3xl font-orbitron font-bold text-primary">125K+</div>
+            <div className="text-3xl font-orbitron font-bold text-primary">100</div>
             <div className="text-muted-foreground">Active Users</div>
           </div>
           <div className="text-center" data-testid="stat-chains">
-            <div className="text-3xl font-orbitron font-bold text-secondary">15</div>
+            <div className="text-3xl font-orbitron font-bold text-secondary">10</div>
             <div className="text-muted-foreground">Supported Chains</div>
           </div>
         </div>
