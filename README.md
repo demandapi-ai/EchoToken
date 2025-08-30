@@ -1,4 +1,5 @@
 # EchoToken
+https://hzjh3-maaaa-aaaap-qqcta-cai.icp0.io/
 Product Description: EchoToken (aka Token Smith) lets anyone forge ICRC‑2 tokens on ICP with natural‑language commands. Powered by a Fetch.ai agent, users can simply describe the token they want (“Create a token named Banana Coin, ticker BAN, description, website & socials”) and the system will deploy a new token canister, mint the requested supply, and assign it to the provided principal address. This lowers the barrier to entry for token creation, making Web3 accessible to developers and non‑technical users alike.
 
 ## 🚀 Features
